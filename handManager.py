@@ -10,45 +10,45 @@ class HandManager:
         self.mp_drawing = mp.solutions.drawing_utils
         self.mp_hands = mp.solutions.hands
 
-    def calculate_distance(self, x1, y1, x2, y2):
+    def calculateDistance(self, x1, y1, x2, y2):
         p1 = np.array([x1, y1])
         p2 = np.array([x2, y2])
         return np.linalg.norm(p1 - p2)
 
-    def detect_finger_down(self, hand_landmarks, width, height, output):
-        finger_down = False
-        color_base = (255, 0, 112)
-        color_index = (255, 198, 82)
+    def detect_finger_down(self, handLandmarks, width, height, output):
+        fingerDown = False
+        colorBase = (255, 0, 112)
+        colorIndex = (255, 198, 82)
 
-        x_base1 = int(hand_landmarks.landmark[0].x * width)
-        y_base1 = int(hand_landmarks.landmark[0].y * height)
+        xBase1 = int(handLandmarks.landmark[0].x * width)
+        yBase1 = int(handLandmarks.landmark[0].y * height)
 
-        x_base2 = int(hand_landmarks.landmark[9].x * width)
-        y_base2 = int(hand_landmarks.landmark[9].y * height)
+        xBase2 = int(handLandmarks.landmark[9].x * width)
+        yBase2 = int(handLandmarks.landmark[9].y * height)
 
-        x_index = int(hand_landmarks.landmark[8].x * width)
-        y_index = int(hand_landmarks.landmark[8].y * height)
+        xIndex = int(handLandmarks.landmark[8].x * width)
+        yIndex = int(handLandmarks.landmark[8].y * height)
 
-        d_base = self.calculate_distance(x_base1, y_base1, x_base2, y_base2)
-        d_base_index = self.calculate_distance(
-            x_base1, y_base1, x_index, y_index)
+        dBase = self.calculateDistance(xBase1, yBase1, xBase2, yBase2)
+        dBase_index = self.calculateDistance(
+            xBase1, yBase1, xIndex, yIndex)
 
-        if d_base_index < d_base:
-            finger_down = True
-            color_base = (255, 0, 255)
-            color_index = (255, 0, 255)
+        if dBase_index < dBase:
+            fingerDown = True
+            colorBase = (255, 0, 255)
+            colorIndex = (255, 0, 255)
 
-        cv2.circle(output, (x_base1, y_base1), 5, color_base, 2)
-        cv2.circle(output, (x_index, y_index), 5, color_index, 2)
-        cv2.line(output, (x_base1, y_base1), (x_base2, y_base2), color_base, 3)
-        cv2.line(output, (x_base1, y_base1),
-                 (x_index, y_index), color_index, 3)
+        cv2.circle(output, (xBase1, yBase1), 5, colorBase, 2)
+        cv2.circle(output, (xIndex, yIndex), 5, colorIndex, 2)
+        cv2.line(output, (xBase1, yBase1), (xBase2, yBase2), colorBase, 3)
+        cv2.line(output, (xBase1, yBase1),
+                 (xIndex, yIndex), colorIndex, 3)
 
-        return finger_down
+        return fingerDown
 
     def start(self):
         cap = self.screenManager.beginVideoCapture()
-        aspect_ratio_screen = self.screenManager.getAspectRatioScreen()
+        aspectRatioScreen = self.screenManager.getAspectRatioScreen()
         X_Y_INI = self.screenManager.getMargin()
         X_INI = self.screenManager.getXIni()
         X_FIN = self.screenManager.getXFin()
@@ -70,12 +70,12 @@ class HandManager:
                 frame = cv2.flip(frame, 1)
 
                 # Dibujando un área proporcional a la del juego
-                area_width = width - X_Y_INI * 2
-                area_height = int(area_width / aspect_ratio_screen)
-                aux_image = np.zeros(frame.shape, np.uint8)
-                aux_image = cv2.rectangle(aux_image, (X_Y_INI, X_Y_INI), (
-                    X_Y_INI + area_width, X_Y_INI + area_height), (255, 0, 0), -1)
-                output = cv2.addWeighted(frame, 1, aux_image, 0.7, 0)
+                areaWidth = width - X_Y_INI * 2
+                areaHeight = int(areaWidth / aspectRatioScreen)
+                auxImage = np.zeros(frame.shape, np.uint8)
+                auxImage = cv2.rectangle(auxImage, (X_Y_INI, X_Y_INI), (
+                    X_Y_INI + areaWidth, X_Y_INI + areaHeight), (255, 0, 0), -1)
+                output = cv2.addWeighted(frame, 1, auxImage, 0.7, 0)
 
                 frame_rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
 
@@ -86,9 +86,9 @@ class HandManager:
                         x = int(hand_landmarks.landmark[9].x * width)
                         y = int(hand_landmarks.landmark[9].y * height)
                         xm = np.interp(
-                            x, (X_Y_INI, X_Y_INI + area_width), (X_INI, X_FIN))
+                            x, (X_Y_INI, X_Y_INI + areaWidth), (X_INI, X_FIN))
                         ym = np.interp(
-                            y, (X_Y_INI, X_Y_INI + area_height), (Y_INI, Y_FIN))
+                            y, (X_Y_INI, X_Y_INI + areaHeight), (Y_INI, Y_FIN))
                         pyautogui.moveTo(int(xm), int(ym))
                         if self.detect_finger_down(hand_landmarks, width, height, output):
                             pyautogui.click()
